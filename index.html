@@ -17,16 +17,6 @@
 <body>
     <textarea class="autocomplete">Lorem ipsum dolor</textarea>
     <script>
-        function setCaretPosition(element, position) {
-            var range = document.createRange();
-            var sel = window.getSelection();
-            range.setStart(element.childNodes[0], 1);
-            range.collapse(true);
-            sel.removeAllRanges();
-            sel.addRange(range);
-            element.focus();
-        }
-
         function getCaretPosition(element) {
             var caretOffset = 0;
             var doc = element.ownerDocument || element.document;
@@ -59,48 +49,29 @@
 
             console.log( position, char );
 
+            div.querySelector( ".autocompletion" )?.remove();
+
             if( char === " " || char === " " ) {
-                if( div.querySelectorAll( ".autocompletion" ).length ) {
-                    return;
-                }
-
                 console.log( "adding autocompletion" );
-                const start = div.textContent.slice( 0, position + 1 );
-                const end = div.textContent.slice( position );
 
-                div.querySelector(".end-container")?.remove();
+                const sel = window.getSelection();
+                if (sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
 
-                const spans = div.querySelectorAll("span");
-                if( spans.length ) {
-                    const start_container = div.querySelectorAll("span")[0];
-                    start_container.textContent = start;
-                } else {
-                    div.textContent = "";
-                    const start_container = document.createElement( "span" );
-                    start_container.textContent = start;
-                    div.appendChild( start_container );
+                    const autocompletion = "this is a test";
+                    const autocompletion_container = document.createElement( "span" );
+                    autocompletion_container.classList.add( "autocompletion" );
+                    autocompletion_container.textContent = autocompletion;
+                    autocompletion_container.contentEditable = false;
+                    range.insertNode(autocompletion_container);
+
+                    range.setStartBefore(autocompletion_container);
+                    range.setEndBefore(autocompletion_container);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
                 }
-
-                const autocompletion = "this is a test";
-
-                const autocompletion_container = document.createElement( "span" );
-                autocompletion_container.classList.add( "autocompletion" );
-                autocompletion_container.textContent = autocompletion;
-                autocompletion_container.contentEditable = false;
-                div.appendChild( autocompletion_container );
-
-                const end_container = document.createElement( "span" );
-                end_container.classList.add( "end-container" );
-                end_container.textContent = end;
-                div.appendChild( end_container );
-
-                setCaretPosition( div, position + 1 );
             } else {
                 console.log( "removed autocompletion ("+char+")" );
-                div.querySelectorAll( ".autocompletion" ).forEach( e => {
-                    e.remove();
-                    div.querySelector(".end-container").textContent = div.querySelector(".end-container").textContent.slice( 1 );
-                } );
             }
         }
 
@@ -108,10 +79,7 @@
             const div = document.createElement( "div" );
             div.classList.add( "autocomplete-div" );
             div.contentEditable = true;
-
-            const start_container = document.createElement( "span" );
-            start_container.textContent = element.value;
-            div.appendChild( start_container );
+            div.textContent = element.value;
 
             div.addEventListener( "keyup", function(e) {
                 if( ! e.ctrlKey && ! e.altKey && ! e.shiftKey && ! e.metaKey ) {
