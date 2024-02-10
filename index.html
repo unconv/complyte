@@ -50,7 +50,9 @@
 
             console.log( position, char );
 
-            div.querySelector( ".autocompletion" )?.remove();
+            div.querySelectorAll( ".autocompletion" ).forEach(e => {
+                e.style.display = "none";
+            });
 
             if( char === " " || char === " " ) {
                 console.log( "adding autocompletion" );
@@ -58,6 +60,9 @@
                 const sel = window.getSelection();
                 if (sel.rangeCount > 0) {
                     const range = sel.getRangeAt(0);
+                    div.querySelectorAll( ".autocompletion" ).forEach(e => {
+                        e.remove();
+                    });
 
                     const autocompletion = "this is a test";
                     const autocompletion_container = document.createElement( "span" );
