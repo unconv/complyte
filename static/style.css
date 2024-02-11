@@ -1,0 +1,9 @@
+.autocomplete-div {
+    overflow: auto;
+}
+
+.autocompletion {
+    background-color: #ccc;
+    display: inline-block;
+    margin-right: 5px;
+}
