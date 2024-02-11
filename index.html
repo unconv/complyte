@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style type="text/css">
-        .autocomplete-div {
-            border: 1px solid black;
-        }
         .autocompletion {
             background-color: #ccc;
             display: inline-block;
@@ -16,8 +13,38 @@
     </style>
 </head>
 <body>
-    <textarea class="autocomplete">Lorem ipsum dolor</textarea>
+    <form action="">
+        <textarea name="message" class="autocomplete" cols="25">Lorem ipsum dolor</textarea><br />
+        <button>Submit</button>
+    </form>
     <script>
+        const autocompletion_list = [
+            "Sorry for the late reply",
+            "I'm sorry, I don't understand",
+            "Let me know if you need any help",
+            "Let me know what you think",
+        ];
+
+        function get_autocompletion( text ) {
+            text = text.toLowerCase();
+            text = text.replace( /\s/g, " " );
+
+            for( let sentence of autocompletion_list ) {
+                sentence = sentence.toLowerCase();
+
+                for( let i = 0; i <= sentence.length*0.6; i++ ) {
+                    const start = sentence.slice( 0, sentence.length-i );
+                    const end = sentence.slice( sentence.length-i, sentence.length );
+
+                    if( text.endsWith( start ) ) {
+                        return end;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         function getCaretPosition(element) {
             var caretOffset = 0;
             var doc = element.ownerDocument || element.document;
@@ -42,32 +69,27 @@
             return caretOffset;
         }
 
-        function do_autocomplete( div ) {
+        function do_autocomplete( div, textarea ) {
+            div.querySelector( ".autocompletion" )?.remove();
+
+            textarea.value = div.textContent;
+
             // get cursror position
-            let position = getCaretPosition( div ) - 1;
-            position = position < 0 ? 0 : position;
-            const char = div.textContent[position];
+            const position = getCaretPosition( div );
+            const text = div.textContent.slice( 0, position );
 
-            console.log( position, char );
+            const autocompletion = get_autocompletion( text );
 
-            div.querySelectorAll( ".autocompletion" ).forEach(e => {
-                e.style.display = "none";
-            });
-
-            if( char === " " || char === " " ) {
+            if( autocompletion ) {
                 console.log( "adding autocompletion" );
 
                 const sel = window.getSelection();
                 if (sel.rangeCount > 0) {
                     const range = sel.getRangeAt(0);
-                    div.querySelectorAll( ".autocompletion" ).forEach(e => {
-                        e.remove();
-                    });
 
-                    const autocompletion = "this is a test";
                     const autocompletion_container = document.createElement( "span" );
                     autocompletion_container.classList.add( "autocompletion" );
-                    autocompletion_container.textContent = autocompletion;
+                    autocompletion_container.textContent = autocompletion.replace( / /g, "\u00a0" );
                     autocompletion_container.contentEditable = false;
                     range.insertNode(autocompletion_container);
 
@@ -77,7 +99,7 @@
                     sel.addRange(range);
                 }
             } else {
-                console.log( "removed autocompletion ("+char+")" );
+                console.log( "removed autocompletion" );
             }
         }
 
@@ -89,11 +111,19 @@
 
             div.addEventListener( "keyup", function(e) {
                 if( ! e.ctrlKey && ! e.altKey && ! e.shiftKey && ! e.metaKey ) {
-                    do_autocomplete( this );
+                    do_autocomplete( this, element );
                 }
             } );
 
-            document.body.appendChild( div );
+            div.style.width = element.offsetWidth + "px";
+            div.style.height = element.offsetHeight + "px";
+
+            // copy the border of the textarea
+            div.style.border = window.getComputedStyle( element ).border;
+            div.style.borderRadius = window.getComputedStyle( element ).borderRadius; // TODO: doesn't work
+
+            element.insertAdjacentElement( "afterend", div );
+            element.style.display = "none";
         }
 
         document.querySelectorAll(".autocomplete").forEach( e => {
